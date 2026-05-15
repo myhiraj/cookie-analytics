@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from cookie import Cookie
+from src.cookie import Cookie
 from csv import DictReader
 
 class CookieLog:
