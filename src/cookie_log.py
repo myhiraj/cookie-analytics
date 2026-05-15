@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class CookieLog:
     def __init__(self, log_file_path: str):
         self._cookie_registry : dict[str, Cookie] = {}
-        self._date_log : dict[date, list[Cookie]] = {}
+        self._date_log : dict[date, set[Cookie]] = {}
 
         self._load_cookies_from_log(log_file_path)
 
@@ -33,9 +33,13 @@ class CookieLog:
             with open(log_file_path, 'r') as f:
 
                 reader = DictReader(f)
-                
+
                 expected = {'cookie', 'timestamp'}
-                if not expected.issubset(reader.fieldnames or []):
+
+                if not reader.fieldnames:
+                    raise ValueError("Log file is empty")
+
+                if not expected.issubset(reader.fieldnames):
                     raise ValueError(f"Log file is missing required fields. Expected: {expected}")
 
                 for row in reader:
@@ -61,9 +65,8 @@ class CookieLog:
                     cookie.insert_timestamps([datetime_obj])
 
                     if datetime_obj.date() not in self._date_log:
-                        self._date_log[datetime_obj.date()] = []
+                        self._date_log[datetime_obj.date()] = set()
 
-                    if cookie not in self._date_log[datetime_obj.date()]:
-                        self._date_log[datetime_obj.date()].append(cookie)
+                    self._date_log[datetime_obj.date()].add(cookie)
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Log file not found: {log_file_path}") from e
