@@ -27,3 +27,6 @@ class Cookie:
     
     def __repr__(self):
         return f"Cookie(name={self.name}, activity={self._activity})"
+    
+    def __hash__(self):
+        return hash(self.name)
