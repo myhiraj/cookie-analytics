@@ -27,6 +27,7 @@ def main():
 
     if not most_active_cookies:
         print(f"No cookies found for date: {target_date}")
+        sys.exit(0)
 
     for cookie in most_active_cookies:
         print(cookie)
