@@ -20,6 +20,7 @@ class TestCookieLog:
             CookieLog("tests/log_file_fixtures/empty_case.csv")
 
     def test_malformed_row_missing_data(self):
+        # fixture: valid row plus rows with a missing cookie or timestamp value
         log = CookieLog("tests/log_file_fixtures/missing_values.csv")
         result = log.most_active_cookie_for_date(date(2018, 12, 9))
         assert result == ["AtY0laUfhglK31C7"]
@@ -53,13 +54,13 @@ class TestCookieLog:
 
 class TestCookie:
     def test_same_cookie_object_across_dates(self):
+        # Verifies that _cookie_registry and _date_log reference the same object,
+        # not separate Cookie instances with the same name
         log = CookieLog("tests/log_file_fixtures/simple_case.csv")
-        registry = log._cookie_registry
-        date_log = log._date_log
 
-        cookie_from_registry = registry["AtY0laUfhglK31C7"]
+        cookie_from_registry = log._cookie_registry["AtY0laUfhglK31C7"]
         cookie_from_date_log = next(
-            c for c in date_log[date(2018, 12, 9)] 
+            c for c in log._date_log[date(2018, 12, 9)]
             if c.name == "AtY0laUfhglK31C7"
         )
 

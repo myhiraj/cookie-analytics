@@ -6,13 +6,37 @@ from csv import DictReader
 logger = logging.getLogger(__name__)
 
 class CookieLog:
+
+    '''
+    Parses a cookie activity log CSV and answers queries against it.
+
+    The CSV must have at minimum two columns: 'cookie' and 'timestamp'.
+    Timestamps must be ISO 8601 format (e.g. 2018-12-09T14:19:00+00:00).
+    Rows with missing values or unparseable timestamps are skipped with a warning.
+
+    Raises:
+        FileNotFoundError: If the log file does not exist.
+        ValueError: If the file is empty or missing required columns.
+    '''
+
     def __init__(self, log_file_path: str):
-        self._cookie_registry : dict[str, Cookie] = {}
-        self._date_log : dict[date, set[Cookie]] = {}
+        # primary index for lookup of cookies active on a given date
+        self._date_log : dict[date, set[Cookie]] = {}  # date -> set of cookies active on that date
+
+        # secondary index for lookup of cookies by name
+        self._cookie_registry : dict[str, Cookie] = {} # string cookie name -> Cookie object
 
         self._load_cookies_from_log(log_file_path)
 
-    def most_active_cookie_for_date(self, target_date: date):
+
+    def most_active_cookie_for_date(self, target_date: date) -> list[str]:
+
+        '''
+        Returns the name(s) of the most frequently seen cookie(s) on the given date.
+        If multiple cookies share the highest frequency, all are returned.
+        Returns an empty list if no cookies were seen on that date.
+        '''
+
         if target_date not in self._date_log:
             return []
         
@@ -29,6 +53,8 @@ class CookieLog:
 
 
     def _load_cookies_from_log(self, log_file_path: str):
+        '''Reads and indexes the log file into _cookie_registry and _date_log.'''
+
         try:
             with open(log_file_path, 'r') as f:
 
