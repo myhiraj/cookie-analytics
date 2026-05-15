@@ -1,6 +1,9 @@
 from datetime import datetime, date
+import logging
 from src.cookie import Cookie
 from csv import DictReader
+
+logger = logging.getLogger(__name__)
 
 class CookieLog:
     def __init__(self, log_file_path: str):
@@ -26,22 +29,41 @@ class CookieLog:
 
 
     def _load_cookies_from_log(self, log_file_path: str):
-        with open(log_file_path, 'r') as f:
-            reader = DictReader(f)
-            for row in reader:
-                cookie_name = row['cookie']
-                datetime_str = row['timestamp']
-                datetime_obj = datetime.fromisoformat(datetime_str)
+        try:
+            with open(log_file_path, 'r') as f:
 
-                if cookie_name not in self._cookie_registry:
-                    self._cookie_registry[cookie_name] = Cookie(cookie_name)
+                reader = DictReader(f)
                 
-                cookie_obj = self._cookie_registry[cookie_name]
+                expected = {'cookie', 'timestamp'}
+                if not expected.issubset(reader.fieldnames or []):
+                    raise ValueError(f"Log file is missing required fields. Expected: {expected}")
 
-                cookie_obj.insert_timestamps([datetime_obj])
+                for row in reader:
 
-                if datetime_obj.date() not in self._date_log:
-                    self._date_log[datetime_obj.date()] = []
+                    cookie_name = row['cookie'].strip('" ')
+                    datetime_str = row['timestamp'].strip('" ')
 
-                if cookie_obj not in self._date_log[datetime_obj.date()]:
-                    self._date_log[datetime_obj.date()].append(cookie_obj)
+                    if not cookie_name or not datetime_str:
+                        logger.warning(f"Skipping row with missing values: {row}")
+                        continue
+
+                    try:
+                        datetime_obj = datetime.fromisoformat(datetime_str)
+                    except ValueError:
+                        logger.warning(f"Skipping invalid timestamp: {datetime_str}")
+                        continue
+
+                    if cookie_name not in self._cookie_registry:
+                        self._cookie_registry[cookie_name] = Cookie(cookie_name)
+                    
+                    cookie = self._cookie_registry[cookie_name]
+
+                    cookie.insert_timestamps([datetime_obj])
+
+                    if datetime_obj.date() not in self._date_log:
+                        self._date_log[datetime_obj.date()] = []
+
+                    if cookie not in self._date_log[datetime_obj.date()]:
+                        self._date_log[datetime_obj.date()].append(cookie)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Log file not found: {log_file_path}") from e

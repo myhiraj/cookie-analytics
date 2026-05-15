@@ -3,6 +3,9 @@ from datetime import datetime, date, time
 class Cookie:
 
     def __init__(self, name: str, timestamps: list[datetime] | None = None):
+        if not name or not name.strip():
+            raise ValueError("Cookie name cannot be empty")
+        
         self.name: str = name
         self._activity: dict[date, list[time]] = {}
 
@@ -28,5 +31,7 @@ class Cookie:
     def __repr__(self):
         return f"Cookie(name={self.name}, activity={self._activity})"
     
-    def __hash__(self):
-        return hash(self.name)
+    def __eq__(self, other):
+        if not isinstance(other, Cookie):
+            return NotImplemented
+        return self.name == other.name
