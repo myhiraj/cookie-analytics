@@ -29,7 +29,7 @@ class CookieLog:
         self._load_cookies_from_log(log_file_path)
 
 
-    def most_active_cookie_for_date(self, target_date: date) -> list[str]:
+    def most_active_cookie_for_date(self, target_date: date, sort: int | None = None) -> list[str]:
 
         '''
         Returns the name(s) of the most frequently seen cookie(s) on the given date.
@@ -45,13 +45,17 @@ class CookieLog:
 
         for cookie in cookies_for_date:
             frequency_map[cookie.name] = cookie.get_activity_frequency_by_date(target_date)
+
+        if sort:
+            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=True)
+            return [cookie_name for cookie_name, _freq in frequency_map_sorted]
         
         max_frequency = max(frequency_map.values())
         most_active_cookies = [cookie_name for cookie_name, freq in frequency_map.items() if freq == max_frequency]
         
         return most_active_cookies
     
-    def most_active_cookie_for_range(self, start_date: date, end_date: date) -> list[str]:
+    def most_active_cookie_for_range(self, start_date: date, end_date: date, sort: int | None = None) -> list[str]:
 
         '''
         Returns the name(s) of the most frequently seen cookie(s) across the given date range (inclusive).
@@ -72,6 +76,10 @@ class CookieLog:
         if not frequency_map:
             return []
         
+        if sort:
+            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=True)
+            return [cookie_name for cookie_name, _freq in frequency_map_sorted]
+
         max_frequency = max(frequency_map.values())
         most_active_cookies = [cookie_name for cookie_name, freq in frequency_map.items() if freq == max_frequency]
 
