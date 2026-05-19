@@ -28,9 +28,15 @@ def main():
     if args.method_selection not in ANALYSIS_METHODS:
         print(f"Invalid method selection: {args.method_selection}. Valid options are: {ANALYSIS_METHODS}")
         sys.exit(1)
+
+    try:
+        cookie_log = CookieLog(args.log_file_path.strip('" '))
+    except (FileNotFoundError, ValueError) as e:
+        print(e)
+        sys.exit(1)
     
     if args.method_selection == "most_active_cookie_for_date":
-        if not args.log_file_path or not args.d:
+        if not args.d:
             print("For 'most_active_cookie_for_date', both log_file_path and -d (date) arguments are required.")
             sys.exit(1)
         else:
@@ -38,12 +44,6 @@ def main():
                 target_date = date.fromisoformat(args.d.strip('" '))
             except ValueError:
                 print(f"Invalid date format: {args.d}. Expected format: YYYY-MM-DD")
-                sys.exit(1)
-
-            try:
-                cookie_log = CookieLog(args.log_file_path.strip('" '))
-            except (FileNotFoundError, ValueError) as e:
-                print(e)
                 sys.exit(1)
 
             most_active_cookies = cookie_log.most_active_cookie_for_date(target_date)
@@ -54,10 +54,10 @@ def main():
             else:
                 for cookie in most_active_cookies:
                     print(cookie)
-                    sys.exit(0)
+                sys.exit(0)
         
     if args.method_selection == "most_active_cookie_for_range":
-        if not args.log_file_path or not args.start_date or not args.end_date:
+        if not args.start_date or not args.end_date:
             print("For 'most_active_cookie_for_range', 'log_file_path', '--start_date', and '--end_date' arguments are required.")
             sys.exit(1)
         else:
@@ -75,13 +75,7 @@ def main():
                 sys.exit(1)
             
             if start_date > end_date:
-                print(f"Start start date cannot be after end date: {start_date} > {end_date}.")
-                sys.exit(1)
-
-            try:
-                cookie_log = CookieLog(args.log_file_path.strip('" '))
-            except (FileNotFoundError, ValueError) as e:
-                print(e)
+                print(f"start date cannot be after end date: {start_date} > {end_date}.")
                 sys.exit(1)
             
             most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date)
@@ -92,7 +86,7 @@ def main():
             else:
                 for cookie in most_active_cookies:
                     print(cookie)
-                    sys.exit(0)
+                sys.exit(0)
                 
 
             
