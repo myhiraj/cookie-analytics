@@ -1,22 +1,46 @@
 # cookie-analytics
 
-A command-line tool that parses a cookie activity log and returns the most active cookie for a given date.
+A command-line tool that parses a cookie activity log and returns the most active cookie(s) for a given date or date range.
 
 ## Usage
 
 ```bash
-./most_active_cookie <log_file_path> -d <date>
+python main.py <method> <log_file_path> [options]
+```
+
+### Methods
+
+#### `most_active_cookie_for_date`
+
+Returns the most active cookie(s) on a specific date.
+
+```bash
+python main.py most_active_cookie_for_date <log_file_path> -d <date>
 ```
 
 Example:
 
 ```bash
-./most_active_cookie cookie_log.csv -d 2018-12-09
+python main.py most_active_cookie_for_date cookie_log.csv -d 2018-12-09
+```
+
+#### `most_active_cookie_for_range`
+
+Returns the most active cookie(s) across an inclusive date range.
+
+```bash
+python main.py most_active_cookie_for_range <log_file_path> -from <start_date> -to <end_date>
+```
+
+Example:
+
+```bash
+python main.py most_active_cookie_for_range cookie_log.csv -from 2018-12-08 -to 2018-12-09
 ```
 
 The log file must be a CSV with at minimum two columns: `cookie` and `timestamp`. Timestamps must be ISO 8601 format. Extra columns are ignored. Rows with missing values or unparseable timestamps are skipped with a warning.
 
-If multiple cookies share the highest frequency on a given date, all are returned, one per line.
+If multiple cookies share the highest frequency, all are returned, one per line.
 
 ## Setup
 
@@ -38,7 +62,7 @@ chmod +x most_active_cookie
 
 ## Implementation Decisions
 
-**Plain dicts instead of a sorted tree** — my original design used a self-balancing tree keyed on `date` to support range queries. Since only the standard library was used and it has no native sorted tree, plain dicts are used instead. If range queries are needed, the `bisect` module provides binary search over a sorted list as a standard library alternative.
+**Plain dicts instead of a sorted tree** — my original design used a self-balancing tree keyed on `date` to support range queries. Since only the standard library was used and it has no native sorted tree, plain dicts are used instead. Range queries iterate over all keys and filter by date bounds. If performance becomes a concern, the `bisect` module could provide binary search over a sorted list as a standard library alternative.
 
 **Secondary index** — `_cookie_registry` was added not just for deduplication during parsing, but as a foundation for future cookie-centric queries (e.g. "which days was cookie X most active"). Both indexes are built in a single CSV parse pass at no extra time cost.
 
@@ -62,4 +86,4 @@ Or with verbose output:
 pytest -v
 ```
 
-Test fixtures are in `tests/log_file_fixtures/`. Tests cover single winners, ties, empty files, missing headers, malformed rows, bad timestamps, and CLI behaviour.
+Test fixtures are in `tests/log_file_fixtures/`. Tests cover single winners, ties, empty files, missing headers, malformed rows, bad timestamps, range queries, range ties, and CLI behaviour.
