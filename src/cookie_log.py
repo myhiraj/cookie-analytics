@@ -50,7 +50,32 @@ class CookieLog:
         most_active_cookies = [cookie_name for cookie_name, freq in frequency_map.items() if freq == max_frequency]
         
         return most_active_cookies
+    
+    def most_active_cookie_for_range(self, start_date: date, end_date: date) -> list[str]:
 
+        '''
+        Returns the name(s) of the most frequently seen cookie(s) across the given date range (inclusive).
+        If multiple cookies share the highest frequency, all are returned.
+        Returns an empty list if no cookies were seen in that date range.
+        '''
+
+        if start_date not in self._date_log and end_date not in self._date_log:
+            return []
+        
+        frequency_map : dict[str, int] = {}
+
+        for date_key in self._date_log:
+            if start_date <= date_key <= end_date:
+                cookie = self._date_log[date_key]
+                frequency_map[cookie.name] = cookie.get_activity_frequency_by_date(date_key)
+        
+        if not frequency_map:
+            return []
+        
+        max_frequency = max(frequency_map.values())
+        most_active_cookies = [cookie_name for cookie_name, freq in frequency_map.items() if freq == max_frequency]
+
+        return most_active_cookies
 
     def _load_cookies_from_log(self, log_file_path: str):
         '''Reads and indexes the log file into _cookie_registry and _date_log.'''
