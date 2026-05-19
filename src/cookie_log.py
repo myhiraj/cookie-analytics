@@ -58,16 +58,16 @@ class CookieLog:
         If multiple cookies share the highest frequency, all are returned.
         Returns an empty list if no cookies were seen in that date range.
         '''
-
-        if start_date not in self._date_log and end_date not in self._date_log:
-            return []
         
         frequency_map : dict[str, int] = {}
 
         for date_key in self._date_log:
             if start_date <= date_key <= end_date:
-                cookie = self._date_log[date_key]
-                frequency_map[cookie.name] = cookie.get_activity_frequency_by_date(date_key)
+                cookies_for_date = self._date_log[date_key]
+                for cookie in cookies_for_date:
+                    if cookie.name not in frequency_map:
+                        frequency_map[cookie.name] = 0
+                    frequency_map[cookie.name] += cookie.get_activity_frequency_by_date(date_key)
         
         if not frequency_map:
             return []
