@@ -11,9 +11,8 @@ ANALYSIS_METHODS = [
 
 def main():
     parser = argparse.ArgumentParser(description="Run analysis on cookie logs.")
-    parser.add_argument("method_selection", help=f"Which analysis to run:{ANALYSIS_METHODS}")
 
-    
+    parser.add_argument("method_selection", help=f"Which analysis to run:{ANALYSIS_METHODS}")
     parser.add_argument("log_file_path", help="Path to the cookie log file (CSV format)")
 
     # Arguments for most_active_cookie_for_date
@@ -22,6 +21,9 @@ def main():
     # Arguments for most_active_cookie_for_date_range
     parser.add_argument("-from", "--start_date", required=False, help="Start date for range (YYYY-MM-DD)")
     parser.add_argument("-to", "--end_date", required=False, help="End date for range (YYYY-MM-DD)")
+
+    # Optional arguments for sorting top-N results
+    parser.add_argument("-s", "--sort", required=False, help="Include this flag to sort results in desc order by frequency.")
 
     args = parser.parse_args()
 
@@ -34,7 +36,13 @@ def main():
     except (FileNotFoundError, ValueError) as e:
         print(e)
         sys.exit(1)
-    
+
+    try:
+        sort_top_n = int(args.s) if args.s else None
+    except ValueError as e:
+        print(f"Invalid value for sort argument: {args.s}. Must be an integer. Error: {e}")
+        sys.exit(1)
+
     if args.method_selection == "most_active_cookie_for_date":
         if not args.d:
             print("For 'most_active_cookie_for_date', both log_file_path and -d (date) arguments are required.")
@@ -45,16 +53,22 @@ def main():
             except ValueError:
                 print(f"Invalid date format: {args.d}. Expected format: YYYY-MM-DD")
                 sys.exit(1)
+        
+            if args.s:
+                most_active_cookies = cookie_log.most_active_cookie_for_date(target_date, sort=sort_top_n)
 
-            most_active_cookies = cookie_log.most_active_cookie_for_date(target_date)
-
-            if not most_active_cookies:
-                print(f"No cookies found for date: {target_date}")
-                sys.exit(0)
-            else:
-                for cookie in most_active_cookies:
+                for cookie in most_active_cookies[:sort_top_n]:
                     print(cookie)
-                sys.exit(0)
+            else:
+                most_active_cookies = cookie_log.most_active_cookie_for_date(target_date)
+
+                if not most_active_cookies:
+                    print(f"No cookies found for date: {target_date}")
+                    sys.exit(0)
+                else:
+                    for cookie in most_active_cookies:
+                        print(cookie)
+                    sys.exit(0)
         
     if args.method_selection == "most_active_cookie_for_range":
         if not args.start_date or not args.end_date:
@@ -77,19 +91,22 @@ def main():
             if start_date > end_date:
                 print(f"start date cannot be after end date: {start_date} > {end_date}.")
                 sys.exit(1)
-            
-            most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date)
 
-            if not most_active_cookies:
-                print(f"No cookies found for range: {start_date} to {end_date}")
-                sys.exit(0)
-            else:
-                for cookie in most_active_cookies:
+            if args.s:
+                most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date, sort=sort_top_n)
+
+                for cookie in most_active_cookies[:sort_top_n]:
                     print(cookie)
-                sys.exit(0)
-                
+            else:
+                most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date)
 
-            
+                if not most_active_cookies:
+                    print(f"No cookies found for range: {start_date} to {end_date}")
+                    sys.exit(0)
+                else:
+                    for cookie in most_active_cookies:
+                        print(cookie)
+                    sys.exit(0)
 
 
 if __name__ == "__main__":
