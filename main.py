@@ -5,12 +5,12 @@ from src.cookie_log import CookieLog
 from datetime import date
 
 def handle_most_active_cookie_for_date(
-        args: argparse.Namespace | None = None, 
-        cookie_log: CookieLog | None = None, 
+        args: argparse.Namespace,
+        cookie_log: CookieLog,
         sort_top_n: int | None = None
         ):
     if not args.d:
-        print("For 'most_active_cookie_for_date', both log_file_path and -d (date) arguments are required.")
+        print("For 'most_active_cookie_for_date', -d (date) argument is required.")
         sys.exit(1)
     else:
         try:
@@ -18,15 +18,18 @@ def handle_most_active_cookie_for_date(
         except ValueError:
             print(f"Invalid date format: {args.d}. Expected format: YYYY-MM-DD")
             sys.exit(1)
-    
+
         if args.sort:
             most_active_cookies = cookie_log.most_active_cookie_for_date(target_date, sort=sort_top_n)
-            if sort_top_n == 0:
+            if not most_active_cookies:
+                print(f"No cookies found for date: {target_date}")
+            elif sort_top_n == 0:
                 for cookie in most_active_cookies:
                     print(cookie)
             else:
                 for cookie in most_active_cookies[:abs(sort_top_n)]:
                     print(cookie)
+            sys.exit(0)
         else:
             most_active_cookies = cookie_log.most_active_cookie_for_date(target_date)
 
@@ -39,13 +42,13 @@ def handle_most_active_cookie_for_date(
                 sys.exit(0)
 
 def handle_most_active_cookie_for_range(
-        args: argparse.Namespace | None = None, 
-        cookie_log: CookieLog | None = None, 
+        args: argparse.Namespace,
+        cookie_log: CookieLog,
         sort_top_n: int | None = None
         ):
 
     if not args.start_date or not args.end_date:
-        print("For 'most_active_cookie_for_range', 'log_file_path', '--start_date', and '--end_date' arguments are required.")
+        print("For 'most_active_cookie_for_range', '--start_date' and '--end_date' arguments are required.")
         sys.exit(1)
     else:
 
@@ -60,19 +63,22 @@ def handle_most_active_cookie_for_range(
         except ValueError:
             print(f"Invalid date format: {args.end_date}. Expected format: YYYY-MM-DD")
             sys.exit(1)
-        
+
         if start_date > end_date:
             print(f"start date cannot be after end date: {start_date} > {end_date}.")
             sys.exit(1)
 
         if args.sort:
             most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date, sort=sort_top_n)
-            if sort_top_n == 0:
+            if not most_active_cookies:
+                print(f"No cookies found for range: {start_date} to {end_date}")
+            elif sort_top_n == 0:
                 for cookie in most_active_cookies:
                     print(cookie)
             else:
                 for cookie in most_active_cookies[:abs(sort_top_n)]:
                     print(cookie)
+            sys.exit(0)
         else:
             most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date)
 
@@ -107,7 +113,7 @@ def main():
     parser.add_argument("-to", "--end_date", required=False, help="End date for range (YYYY-MM-DD)")
 
     # Optional arguments for sorting top-N results
-    parser.add_argument("-s", "--sort", required=False, help="Include this flag to sort results in desc order by frequency.")
+    parser.add_argument("-s", "--sort", required=False, help="Sort results by frequency. Pass 0 for all desc, N>0 for top-N desc, N<0 for bottom-N asc.")
 
     args = parser.parse_args()
 
