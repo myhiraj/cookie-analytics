@@ -1,12 +1,21 @@
 # cookie-analytics
 
-A command-line tool that parses a cookie activity log and returns the most active cookie(s) for a given date or date range.
+A command-line tool that parses a cookie activity log and returns the most active cookie(s) for a given date or date range. Supports sorting results by frequency and returning the top-N cookies.
 
 ## Usage
 
 ```bash
 python main.py <method> <log_file_path> [options]
 ```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `-d <date>` | Target date (`YYYY-MM-DD`) — required for `most_active_cookie_for_date` |
+| `-from <date>` | Start date (`YYYY-MM-DD`) — required for `most_active_cookie_for_range` |
+| `-to <date>` | End date (`YYYY-MM-DD`) — required for `most_active_cookie_for_range` |
+| `-s <N>` | Sort results by frequency. `0` returns all (desc), `N>0` returns top-N (desc), `N<0` returns bottom-N (asc) |
 
 ### Methods
 
@@ -18,10 +27,16 @@ Returns the most active cookie(s) on a specific date.
 python main.py most_active_cookie_for_date <log_file_path> -d <date>
 ```
 
-Example:
+Example — most active cookie on a date:
 
 ```bash
 python main.py most_active_cookie_for_date cookie_log.csv -d 2018-12-09
+```
+
+Example — top 3 cookies on a date, sorted by frequency:
+
+```bash
+python main.py most_active_cookie_for_date cookie_log.csv -d 2018-12-09 -s 3
 ```
 
 #### `most_active_cookie_for_range`
@@ -32,15 +47,21 @@ Returns the most active cookie(s) across an inclusive date range.
 python main.py most_active_cookie_for_range <log_file_path> -from <start_date> -to <end_date>
 ```
 
-Example:
+Example — most active cookies across a range:
 
 ```bash
 python main.py most_active_cookie_for_range cookie_log.csv -from 2018-12-08 -to 2018-12-09
 ```
 
+Example — all cookies across a range, sorted by frequency descending:
+
+```bash
+python main.py most_active_cookie_for_range cookie_log.csv -from 2018-12-08 -to 2018-12-09 -s 0
+```
+
 The log file must be a CSV with at minimum two columns: `cookie` and `timestamp`. Timestamps must be ISO 8601 format. Extra columns are ignored. Rows with missing values or unparseable timestamps are skipped with a warning.
 
-If multiple cookies share the highest frequency, all are returned, one per line.
+If multiple cookies share the highest frequency, all are returned, one per line. Use `-s` to rank all cookies by frequency instead.
 
 ## Setup
 

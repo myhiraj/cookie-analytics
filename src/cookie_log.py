@@ -29,12 +29,19 @@ class CookieLog:
         self._load_cookies_from_log(log_file_path)
 
 
-    def most_active_cookie_for_date(self, target_date: date) -> list[str]:
+    def most_active_cookie_for_date(self, target_date: date, sort: int | None = None) -> list[str]:
 
         '''
         Returns the name(s) of the most frequently seen cookie(s) on the given date.
         If multiple cookies share the highest frequency, all are returned.
         Returns an empty list if no cookies were seen on that date.
+
+        sort (int | None): Controls ordering and how many results are returned.
+          - None (default): returns only the cookie(s) tied at the highest frequency.
+          - 0:   returns all cookies sorted by frequency descending.
+          - > 0: returns all cookies sorted descending; the caller slices to the top-N.
+          - < 0: returns all cookies sorted ascending; the caller slices to the bottom-N.
+        Note: slicing to top/bottom-N is performed by the handler in main.py, not here.
         '''
 
         if target_date not in self._date_log:
@@ -45,18 +52,33 @@ class CookieLog:
 
         for cookie in cookies_for_date:
             frequency_map[cookie.name] = cookie.get_activity_frequency_by_date(target_date)
+
+        if sort is not None:
+            if sort >= 0:
+                is_reverse = True
+            else:
+                is_reverse = False
+            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=is_reverse)
+            return [cookie_name for cookie_name, _freq in frequency_map_sorted]
         
         max_frequency = max(frequency_map.values())
         most_active_cookies = [cookie_name for cookie_name, freq in frequency_map.items() if freq == max_frequency]
         
         return most_active_cookies
     
-    def most_active_cookie_for_range(self, start_date: date, end_date: date) -> list[str]:
+    def most_active_cookie_for_range(self, start_date: date, end_date: date, sort: int | None = None) -> list[str]:
 
         '''
         Returns the name(s) of the most frequently seen cookie(s) across the given date range (inclusive).
         If multiple cookies share the highest frequency, all are returned.
         Returns an empty list if no cookies were seen in that date range.
+
+        sort (int | None): Controls ordering and how many results are returned.
+          - None (default): returns only the cookie(s) tied at the highest frequency.
+          - 0:   returns all cookies sorted by frequency descending.
+          - > 0: returns all cookies sorted descending; the caller slices to the top-N.
+          - < 0: returns all cookies sorted ascending; the caller slices to the bottom-N.
+        Note: slicing to top/bottom-N is performed by the handler in main.py, not here.
         '''
         
         frequency_map : dict[str, int] = {}
@@ -72,6 +94,14 @@ class CookieLog:
         if not frequency_map:
             return []
         
+        if sort is not None:
+            if sort >= 0:
+                is_reverse = True
+            else:
+                is_reverse = False
+            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=is_reverse)
+            return [cookie_name for cookie_name, _freq in frequency_map_sorted]
+
         max_frequency = max(frequency_map.values())
         most_active_cookies = [cookie_name for cookie_name, freq in frequency_map.items() if freq == max_frequency]
 
