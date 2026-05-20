@@ -46,8 +46,12 @@ class CookieLog:
         for cookie in cookies_for_date:
             frequency_map[cookie.name] = cookie.get_activity_frequency_by_date(target_date)
 
-        if sort:
-            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=True)
+        if sort is not None:
+            if sort >= 0:
+                is_reverse = True
+            else:
+                is_reverse = False
+            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=is_reverse)
             return [cookie_name for cookie_name, _freq in frequency_map_sorted]
         
         max_frequency = max(frequency_map.values())
@@ -76,8 +80,12 @@ class CookieLog:
         if not frequency_map:
             return []
         
-        if sort:
-            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=True)
+        if sort is not None:
+            if sort >= 0:
+                is_reverse = True
+            else:
+                is_reverse = False
+            frequency_map_sorted = sorted(frequency_map.items(), key=lambda x: x[1], reverse=is_reverse)
             return [cookie_name for cookie_name, _freq in frequency_map_sorted]
 
         max_frequency = max(frequency_map.values())

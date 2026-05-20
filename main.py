@@ -4,7 +4,11 @@ import logging
 from src.cookie_log import CookieLog
 from datetime import date
 
-def handle_most_active_cookie_for_date(args: argparse.Namespace | None = None, cookie_log: CookieLog | None = None, sort_top_n: int | None = None):
+def handle_most_active_cookie_for_date(
+        args: argparse.Namespace | None = None, 
+        cookie_log: CookieLog | None = None, 
+        sort_top_n: int | None = None
+        ):
     if not args.d:
         print("For 'most_active_cookie_for_date', both log_file_path and -d (date) arguments are required.")
         sys.exit(1)
@@ -15,11 +19,14 @@ def handle_most_active_cookie_for_date(args: argparse.Namespace | None = None, c
             print(f"Invalid date format: {args.d}. Expected format: YYYY-MM-DD")
             sys.exit(1)
     
-        if sort_top_n:
+        if args.sort:
             most_active_cookies = cookie_log.most_active_cookie_for_date(target_date, sort=sort_top_n)
-
-            for cookie in most_active_cookies[:sort_top_n]:
-                print(cookie)
+            if sort_top_n == 0:
+                for cookie in most_active_cookies:
+                    print(cookie)
+            else:
+                for cookie in most_active_cookies[:abs(sort_top_n)]:
+                    print(cookie)
         else:
             most_active_cookies = cookie_log.most_active_cookie_for_date(target_date)
 
@@ -31,7 +38,11 @@ def handle_most_active_cookie_for_date(args: argparse.Namespace | None = None, c
                     print(cookie)
                 sys.exit(0)
 
-def handle_most_active_cookie_for_range(args: argparse.Namespace | None = None, cookie_log: CookieLog | None = None, sort_top_n: int | None = None):
+def handle_most_active_cookie_for_range(
+        args: argparse.Namespace | None = None, 
+        cookie_log: CookieLog | None = None, 
+        sort_top_n: int | None = None
+        ):
 
     if not args.start_date or not args.end_date:
         print("For 'most_active_cookie_for_range', 'log_file_path', '--start_date', and '--end_date' arguments are required.")
@@ -54,11 +65,14 @@ def handle_most_active_cookie_for_range(args: argparse.Namespace | None = None, 
             print(f"start date cannot be after end date: {start_date} > {end_date}.")
             sys.exit(1)
 
-        if sort_top_n:
+        if args.sort:
             most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date, sort=sort_top_n)
-
-            for cookie in most_active_cookies[:sort_top_n]:
-                print(cookie)
+            if sort_top_n == 0:
+                for cookie in most_active_cookies:
+                    print(cookie)
+            else:
+                for cookie in most_active_cookies[:abs(sort_top_n)]:
+                    print(cookie)
         else:
             most_active_cookies = cookie_log.most_active_cookie_for_range(start_date, end_date)
 
