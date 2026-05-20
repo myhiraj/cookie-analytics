@@ -85,6 +85,7 @@ def handle_most_active_cookie_for_range(
                 sys.exit(0)
 
 
+# Maps method name (CLI positional arg) to its handler function.
 HANDLERS = {
     "most_active_cookie_for_date": handle_most_active_cookie_for_date,
     "most_active_cookie_for_range": handle_most_active_cookie_for_range,

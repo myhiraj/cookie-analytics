@@ -35,6 +35,13 @@ class CookieLog:
         Returns the name(s) of the most frequently seen cookie(s) on the given date.
         If multiple cookies share the highest frequency, all are returned.
         Returns an empty list if no cookies were seen on that date.
+
+        sort (int | None): Controls ordering and how many results are returned.
+          - None (default): returns only the cookie(s) tied at the highest frequency.
+          - 0:   returns all cookies sorted by frequency descending.
+          - > 0: returns all cookies sorted descending; the caller slices to the top-N.
+          - < 0: returns all cookies sorted ascending; the caller slices to the bottom-N.
+        Note: slicing to top/bottom-N is performed by the handler in main.py, not here.
         '''
 
         if target_date not in self._date_log:
@@ -65,6 +72,13 @@ class CookieLog:
         Returns the name(s) of the most frequently seen cookie(s) across the given date range (inclusive).
         If multiple cookies share the highest frequency, all are returned.
         Returns an empty list if no cookies were seen in that date range.
+
+        sort (int | None): Controls ordering and how many results are returned.
+          - None (default): returns only the cookie(s) tied at the highest frequency.
+          - 0:   returns all cookies sorted by frequency descending.
+          - > 0: returns all cookies sorted descending; the caller slices to the top-N.
+          - < 0: returns all cookies sorted ascending; the caller slices to the bottom-N.
+        Note: slicing to top/bottom-N is performed by the handler in main.py, not here.
         '''
         
         frequency_map : dict[str, int] = {}
